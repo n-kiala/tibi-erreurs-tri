@@ -1,6 +1,6 @@
 import streamlit as st
 
-from common import CATEGORIES, CATEGORY_LABELS, load_erreurs, signed_url
+from common import CATEGORIES, CATEGORY_LABELS, dedupe_by_frame_gap, load_erreurs, signed_url
 
 st.set_page_config(page_title="Galerie des erreurs", layout="wide")
 st.title("Galerie des erreurs détectées")
@@ -50,6 +50,7 @@ if statut_choisi == "Validées uniquement":
 elif statut_choisi == "Non relues uniquement":
     df_categorie = df_categorie[~df_categorie["valide"]]
 
+df_categorie = dedupe_by_frame_gap(df_categorie, min_gap=20)
 df_categorie = df_categorie.sort_values("date", ascending=False)
 
 st.markdown("---")
@@ -95,8 +96,3 @@ for index, (_, row) in enumerate(page_df.iterrows()):
                 st.warning("Image indisponible")
 
             st.markdown(f"**📅 {row['date'].strftime('%d/%m/%Y')}** · frame {row['frame']}")
-            st.markdown(f"🎯 Confiance : {row['confiance']}%")
-            if row["valide"]:
-                st.markdown(f"✅ Validée par **{row['validateur']}**")
-            else:
-                st.markdown("⏳ Non relue par un opérateur")

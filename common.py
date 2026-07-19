@@ -22,6 +22,10 @@ VERT_PRINCIPAL = "#4CAF50"
 VERT_CLAIR = "#81C784"
 PALETTE = [VERT_PRINCIPAL, "#2E7D32", VERT_CLAIR]
 
+# Décalage d'affichage : les dates réelles (capturées en 2025) sont translatées
+# pour que la plus récente tombe sur cette date, en conservant l'écart entre elles.
+DATE_ANCHOR = datetime.date(2026, 7, 17)
+
 FILENAME_RE = re.compile(
     r"^surveillance_(?P<date>\d{4}-\d{2}-\d{2})"
     r"_frame(?P<frame>\d+)"
@@ -77,7 +81,28 @@ def load_erreurs() -> pd.DataFrame:
                 }
             )
 
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        offset = DATE_ANCHOR - df["date"].max()
+        df["date"] = df["date"] + offset
+
+    return df
+
+
+def dedupe_by_frame_gap(df: pd.DataFrame, min_gap: int = 20) -> pd.DataFrame:
+    """Ne garde qu'une image par rafale de frames rapprochées (même jour)."""
+    if df.empty:
+        return df
+
+    kept_indexes = []
+    for _, group in df.sort_values(["date", "frame"]).groupby("date", sort=False):
+        last_frame = None
+        for idx, frame in group["frame"].items():
+            if last_frame is None or frame - last_frame >= min_gap:
+                kept_indexes.append(idx)
+                last_frame = frame
+
+    return df.loc[kept_indexes]
 
 
 @st.cache_data(ttl=3000)
