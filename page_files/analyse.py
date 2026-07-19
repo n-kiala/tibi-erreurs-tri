@@ -104,55 +104,26 @@ else:
 st.markdown("---")
 
 # ==========================================
-# Répartition par flux + statut de validation
+# Répartition par flux
 # ==========================================
-col_graph1, col_graph2 = st.columns(2)
-
-with col_graph1:
-    st.subheader("Répartition par flux")
-    df_repartition = df_filtered.groupby("categorie").size().reset_index(name="Nombre d'erreurs")
-    if not df_repartition.empty:
-        fig2 = px.bar(
-            df_repartition,
-            x="categorie",
-            y="Nombre d'erreurs",
-            color="categorie",
-            category_orders={"categorie": CATEGORIES},
-            color_discrete_map=CATEGORY_COLORS,
-            labels={"categorie": ""},
-        )
-        fig2.update_layout(
-            showlegend=False,
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(l=20, r=20, t=20, b=20),
-        )
-        st.plotly_chart(fig2, use_container_width=True)
-    else:
-        st.info("Aucune donnée disponible.")
-
-with col_graph2:
-    st.subheader("Détections relues par un opérateur")
-    df_filtered = df_filtered.copy()
-    df_filtered["Statut"] = df_filtered["valide"].map({True: "Validée", False: "Non relue"})
-    df_statut = df_filtered.groupby(["categorie", "Statut"]).size().reset_index(name="Nombre")
-    if not df_statut.empty:
-        fig3 = px.bar(
-            df_statut,
-            x="categorie",
-            y="Nombre",
-            color="Statut",
-            category_orders={"categorie": CATEGORIES},
-            color_discrete_map={"Validée": "#008300", "Non relue": "#c3c2b7"},
-            barmode="stack",
-            labels={"categorie": ""},
-        )
-        fig3.update_layout(
-            plot_bgcolor="rgba(0,0,0,0)",
-            paper_bgcolor="rgba(0,0,0,0)",
-            margin=dict(l=20, r=20, t=20, b=20),
-            legend_title_text="Statut",
-        )
-        st.plotly_chart(fig3, use_container_width=True)
-    else:
-        st.info("Aucune donnée disponible.")
+st.subheader("Répartition par flux")
+df_repartition = df_filtered.groupby("categorie").size().reset_index(name="Nombre d'erreurs")
+if not df_repartition.empty:
+    fig2 = px.bar(
+        df_repartition,
+        x="categorie",
+        y="Nombre d'erreurs",
+        color="categorie",
+        category_orders={"categorie": CATEGORIES},
+        color_discrete_map=CATEGORY_COLORS,
+        labels={"categorie": ""},
+    )
+    fig2.update_layout(
+        showlegend=False,
+        plot_bgcolor="rgba(0,0,0,0)",
+        paper_bgcolor="rgba(0,0,0,0)",
+        margin=dict(l=20, r=20, t=20, b=20),
+    )
+    st.plotly_chart(fig2, use_container_width=True)
+else:
+    st.info("Aucune donnée disponible.")

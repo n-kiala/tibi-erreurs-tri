@@ -89,20 +89,38 @@ def load_erreurs() -> pd.DataFrame:
     return df
 
 
+def assign_sequence_id(df: pd.DataFrame, max_gap: int = 20) -> pd.DataFrame:
+    """Regroupe en une même séquence les frames rapprochées (même jour, même
+    catégorie) : elles correspondent probablement à une seule et même alerte."""
+    if df.empty:
+        df = df.copy()
+        df["sequence_id"] = pd.Series(dtype=int)
+        return df
+
+    df = df.sort_values(["categorie", "date", "frame"]).copy()
+    sequence_ids = []
+    compteur = 0
+    cle_precedente = None
+    frame_precedente = None
+    for _, row in df.iterrows():
+        cle = (row["categorie"], row["date"])
+        if cle != cle_precedente or row["frame"] - frame_precedente >= max_gap:
+            compteur += 1
+        sequence_ids.append(compteur)
+        cle_precedente = cle
+        frame_precedente = row["frame"]
+
+    df["sequence_id"] = sequence_ids
+    return df
+
+
 def dedupe_by_frame_gap(df: pd.DataFrame, min_gap: int = 20) -> pd.DataFrame:
-    """Ne garde qu'une image par rafale de frames rapprochées (même jour)."""
+    """Ne garde que la première image de chaque séquence rapprochée."""
     if df.empty:
         return df
 
-    kept_indexes = []
-    for _, group in df.sort_values(["date", "frame"]).groupby("date", sort=False):
-        last_frame = None
-        for idx, frame in group["frame"].items():
-            if last_frame is None or frame - last_frame >= min_gap:
-                kept_indexes.append(idx)
-                last_frame = frame
-
-    return df.loc[kept_indexes]
+    df = assign_sequence_id(df, max_gap=min_gap)
+    return df.groupby("sequence_id", as_index=False).first()
 
 
 @st.cache_data(ttl=3000)

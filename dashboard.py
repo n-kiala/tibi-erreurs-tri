@@ -44,6 +44,11 @@ if check_login():
     page_accueil = st.Page("page_files/accueil.py", title="Vue d'ensemble", icon=":material/home:")
     page_analyse = st.Page("page_files/analyse.py", title="Analyse des erreurs", icon=":material/monitoring:")
     page_galerie = st.Page("page_files/galerie.py", title="Galerie photos", icon=":material/photo_library:")
+    page_comportement = st.Page(
+        "page_files/comportement.py",
+        title="Changement comportemental",
+        icon=":material/psychology:",
+    )
 
-    pg = st.navigation([page_accueil, page_analyse, page_galerie])
+    pg = st.navigation([page_accueil, page_analyse, page_galerie, page_comportement])
     pg.run()
