@@ -54,7 +54,6 @@ df_categorie = dedupe_by_frame_gap(df_categorie, min_gap=20)
 df_categorie = df_categorie.sort_values("date", ascending=False)
 
 st.markdown("---")
-st.write(f"**{len(df_categorie)} photo(s)** trouvée(s) pour *{CATEGORY_LABELS[categorie_choisie]}*.")
 
 if df_categorie.empty:
     st.info("Aucune photo ne correspond aux filtres sélectionnés.")
